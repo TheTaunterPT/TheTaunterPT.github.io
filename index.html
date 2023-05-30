@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Taunter</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: url('BG.webp');
+            background-size: 375px;
+            background-repeat: repeat;
+            background-attachment: fixed;
+            background-position: 0 0;
+            animation: scrollBackground 15s linear infinite;
+        }
+
+        @keyframes scrollBackground {
+            0% {
+                background-position: 0 0;
+            }
+            100% {
+                background-position: 750px 375px;
+            }
+        }
+
+        .image-container {
+            image-rendering: pixelated;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .image-container img {
+            width: 300px;
+            height: 300px;
+        }
+
+        .image-container button {
+			transform: translate(185%, 350%);
+            padding: 10px 20px;
+            background-color: #fff;
+            border: none;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+			position: fixed;
+            display: flex;
+        }
+		
+        .title-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 999;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .title-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .button-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .button-container button {
+            padding: 10px 20px;
+            background-color: #fff;
+            border: none;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+		
+		.container {
+			pointer-events: none;
+            height: 100%;
+			width: 0%;
+			position: fixed;
+            display: flex;
+			transform: translate(0%, 0%);
+            justify-content: flex-start;
+            align-items: flex-start;
+			z-index: 9998;
+			object-fit: cover;
+			background-color: red;
+        }
+		
+		.jump-image {
+			image-rendering: pixelated;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, 0%);
+			z-index: 9999;
+			animation: none;
+			visibility: hidden;
+			width: 100%;
+			height: 110%;
+			object-fit: cover;
+		}
+
+        
+        @keyframes jumpAnimation {
+            0% {
+                top: 100%;
+            }
+            10% {
+                top: -6%;
+            }
+			50% {
+                top: -4%;
+            }
+			90% {
+                top: -5%;
+            }
+			100% {
+				top: 100%;
+            }
+        }
+		@keyframes jumpAnimation2 {
+            0% {
+				transform: translate(0%, 50%);
+				width: 0%;
+            }
+            10% {
+				transform: translate(0%, 0%);
+				width: 100%;
+            }
+			50% {
+				transform: translate(0%, 0%);
+				width: 100%;
+            }
+			90% {
+				transform: translate(0%, 0%);
+				width: 100%;
+            }
+			100% {
+				transform: translate(0%, 50%);
+				width: 0%;
+            }
+        }
+    </style>
+    <script>
+        var imageIndex = 0;
+        var images = [
+            'taunt1.webp',
+            'taunt2.webp',
+            'taunt3.webp',
+            'taunt4.webp',
+            'taunt5.webp',
+            'taunt6.webp',
+            'taunt7.webp',
+            'taunt8.webp',
+            'taunt9.webp',
+            'taunt10.webp',
+        ];
+        var imageElement = null;
+        var tauntElement = null;
+        var timeoutId = null;
+		var nojumpsacre = 1;
+
+		function jumpScare() {
+			var image = document.getElementById('jumpImage');
+			var image2 = document.getElementById('jump');
+			var nojumpsacre = 0;
+			image.style.visibility = 'visible';
+			image.style.animation = 'jumpAnimation 2.75s';
+			image2.style.animation = 'jumpAnimation2 2.75s';
+			var audio = new Audio('jumpscare.wav');
+			audio.play();
+			setTimeout(function() {
+				image.style.visibility = 'hidden';
+				image.style.animation = 'none';
+				image2.style.animation = 'none';
+			}, 2700); 
+        }
+
+        function cycleImage() {
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
+            imageElement = document.getElementById('image');
+            tauntElement = document.getElementById('custom-audio');
+            imageIndex = (imageIndex + 1) % images.length;
+            imageElement.src = images[imageIndex];
+            playAudio(tauntElement.src)
+            timeoutId = setTimeout(function() {
+                imageElement.src = 'idle.webp';
+            }, 600);
+        }
+
+        function playAudio(audioFile) {
+            new Audio(audioFile).play();
+        }
+
+        function importTaunt() {
+            var fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'audio/*';
+            fileInput.onchange = function(event) {
+                var file = event.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        var audioData = reader.result;
+                        var audioElement = document.getElementById('custom-audio');
+                        audioElement.src = audioData;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            fileInput.click();
+        }
+
+        function hideTitleScreen() {
+            var titleScreen = document.getElementById('title-screen');
+            titleScreen.classList.add('hidden');
+            setTimeout(function() {
+                titleScreen.style.display = 'none';
+            }, 1000);
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'c' || event.key === 'C') {
+                cycleImage();
+            }
+        });
+		
+		document.addEventListener('keydown', function(event) {
+            if (event.key === 'n' || event.key === 'N') {
+                jumpScare();
+            }
+        });
+    </script>
+</head>
+<body>
+	<div id="jump" class="container">
+        <img id="jumpImage" class="jump-image" src="jumpy.png" alt="Jump Image">
+    </div>
+    <div id="title-screen" class="title-screen">
+        <h1>The Taunter</h1>
+        <div class="button-container">
+            <button onclick="hideTitleScreen()">Start</button>
+        </div>
+    </div>
+    <div class="image-container">
+		<button onclick="importTaunt()">Import Custom Taunt Audio</button>
+        <img id="image" src="idle.webp" alt="Image">
+    </div>
+    <audio id="custom-audio" src="sfx_taunt.mp3"></audio>
+</body>
+</html>
