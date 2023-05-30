@@ -17,6 +17,20 @@
             background-position: 0 0;
             animation: scrollBackground 15s linear infinite;
         }
+		
+		button {
+			transform: translate(150%, 300%);
+            padding: 10px 20px;
+            background-color: #fff;
+            border: none;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+			position: fixed;
+            display: flex;
+			text-align: center;
+        }
 
         @keyframes scrollBackground {
             0% {
@@ -39,7 +53,7 @@
         }
 
         .image-container button {
-			transform: translate(185%, 350%);
+			transform: translate(242%, 400%);
             padding: 10px 20px;
             background-color: #fff;
             border: none;
@@ -90,77 +104,93 @@
             cursor: pointer;
         }
 		
-		.container {
-			pointer-events: none;
-            height: 100%;
-			width: 0%;
+		.noise-image-container {
+            image-rendering: pixelated;
+            margin-top: 20px;
+            text-align: center;
+			z-index: -9999;
 			position: fixed;
-            display: flex;
-			transform: translate(0%, 0%);
-            justify-content: flex-start;
-            align-items: flex-start;
-			z-index: 9998;
-			object-fit: cover;
-			background-color: red;
+			animation: move2 15s linear infinite;
+        }
+
+        .noise-image-container img {
+            width: 100px;
+            height: 100px;
         }
 		
-		.jump-image {
-			image-rendering: pixelated;
+		.pepper-image-container {
+            image-rendering: pixelated;
+            margin-top: 20px;
+            text-align: center;
+			z-index: -10000;
 			position: fixed;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, 0%);
-			z-index: 9999;
-			animation: none;
-			visibility: hidden;
-			width: 100%;
-			height: 110%;
-			object-fit: cover;
-		}
+			animation: move 5s linear infinite;
+        }
 
-        
-        @keyframes jumpAnimation {
+        .pepper-image-container img {
+            width: 100px;
+            height: 85px;
+        }
+		
+		.pf-image-container {
+            image-rendering: pixelated;
+            margin-top: 20px;
+            text-align: center;
+			z-index: -9998;
+			position: fixed;
+			animation: move3 25s linear infinite;
+        }
+
+        .pf-image-container img {
+            width: 180px;
+            height: 150px;
+        }
+		
+		.taunt-image-container {
+            image-rendering: pixelated;
+            margin-top: 20px;
+            text-align: center;
+			z-index: -1000;
+			position: fixed;
+        }
+
+        .taunt-image-container img {
+			visibility: hidden;
+            width: 300px;
+            height: 300px;
+        }
+		
+		@keyframes move {
             0% {
-                top: 100%;
-            }
-            10% {
-                top: -6%;
-            }
-			50% {
-                top: -4%;
-            }
-			90% {
-                top: -5%;
+                transform: translate(-750%, -15%);
             }
 			100% {
-				top: 100%;
+				transform: translate(750%, -15%);
             }
         }
-		@keyframes jumpAnimation2 {
+		
+		@keyframes move2 {
             0% {
-				transform: translate(0%, 50%);
-				width: 0%;
-            }
-            10% {
-				transform: translate(0%, 0%);
-				width: 100%;
-            }
-			50% {
-				transform: translate(0%, 0%);
-				width: 100%;
-            }
-			90% {
-				transform: translate(0%, 0%);
-				width: 100%;
+                transform: translate(-1050%, -10%);
             }
 			100% {
-				transform: translate(0%, 50%);
-				width: 0%;
+				transform: translate(1050%, -10%);
             }
         }
+		
+		@keyframes move3 {
+            0% {
+                transform: translate(-3500%, -60%);
+            }
+			100% {
+				transform: translate(3500%, -60%);
+            }
+        }
+		
     </style>
     <script>
         var imageIndex = 0;
+		var tauntIndex = 0;
         var images = [
             'taunt1.webp',
             'taunt2.webp',
@@ -173,40 +203,70 @@
             'taunt9.webp',
             'taunt10.webp',
         ];
+		var imagesS = [
+            'taunt1S.webp',
+            'taunt2S.webp',
+            'taunt3S.webp',
+        ];
+		var sugarytaunts = [
+            'sound_taunt1.ogg',
+            'sound_taunt2.ogg',
+            'sound_taunt3.ogg',
+            'sound_taunt4.ogg',
+            'sound_taunt5.ogg',
+            'sound_taunt6.ogg',
+            'sound_taunt7.ogg',
+        ];
         var imageElement = null;
         var tauntElement = null;
         var timeoutId = null;
-		var nojumpsacre = 1;
 
-		function jumpScare() {
-			var image = document.getElementById('jumpImage');
-			var image2 = document.getElementById('jump');
-			var nojumpsacre = 0;
-			image.style.visibility = 'visible';
-			image.style.animation = 'jumpAnimation 2.75s';
-			image2.style.animation = 'jumpAnimation2 2.75s';
-			var audio = new Audio('jumpscare.wav');
-			audio.play();
-			setTimeout(function() {
-				image.style.visibility = 'hidden';
-				image.style.animation = 'none';
-				image2.style.animation = 'none';
-			}, 2700); 
-        }
+        var isCustomAudioMode = false;
 
-        function cycleImage() {
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-            }
-            imageElement = document.getElementById('image');
-            tauntElement = document.getElementById('custom-audio');
-            imageIndex = (imageIndex + 1) % images.length;
-            imageElement.src = images[imageIndex];
-            playAudio(tauntElement.src)
-            timeoutId = setTimeout(function() {
-                imageElement.src = 'idle.webp';
-            }, 600);
-        }
+		function cycleImage() {
+			if (timeoutId) {
+				clearTimeout(timeoutId);
+			}
+			imageElement = document.getElementById('image');
+			image2Element = document.getElementById('imaget');
+			tauntElement = document.getElementById('custom-audio');
+			image2Element.src = 'tauntbg.webp';
+			image2Element.style.visibility = 'visible';
+    
+			if (isCustomAudioMode) {
+				imageIndex = (imageIndex + 1) % imagesS.length;
+				imageElement.src = imagesS[imageIndex];
+				tauntIndex = (tauntIndex + 1) % sugarytaunts.length;
+				playAudio(sugarytaunts[tauntIndex]);
+			} else {
+				imageIndex = (imageIndex + 1) % images.length;
+				imageElement.src = images[imageIndex];
+				playAudio(tauntElement.src);
+			}
+    
+			timeoutId = setTimeout(function() {
+				if (isCustomAudioMode) {
+					imageElement.src = 'idleS.webp';
+				} else {
+					imageElement.src = 'idle.webp';
+				}
+				image2Element.style.visibility = 'hidden';
+			}, 600);
+		}
+
+		function toggleAudioMode() {
+			if (!isCustomAudioMode) {
+				document.getElementById('image').src = 'idleS.webp';
+				document.getElementById('button5').textContent = 'Sugary Spire Mode (WIP)';
+				tauntIndex = (tauntIndex + 1) % sugarytaunts.length;
+				playAudio(sugarytaunts[tauntIndex]);
+			} else {
+				document.getElementById('image').src = 'idle.webp';
+				document.getElementById('button5').textContent = 'Pizza Tower Mode';
+				playAudio(document.getElementById('custom-audio').src);
+			}
+			isCustomAudioMode = !isCustomAudioMode;
+		}
 
         function playAudio(audioFile) {
             new Audio(audioFile).play();
@@ -244,18 +304,9 @@
                 cycleImage();
             }
         });
-		
-		document.addEventListener('keydown', function(event) {
-            if (event.key === 'n' || event.key === 'N') {
-                jumpScare();
-            }
-        });
     </script>
 </head>
 <body>
-	<div id="jump" class="container">
-        <img id="jumpImage" class="jump-image" src="jumpy.png" alt="Jump Image">
-    </div>
     <div id="title-screen" class="title-screen">
         <h1>The Taunter</h1>
         <div class="button-container">
@@ -263,9 +314,22 @@
         </div>
     </div>
     <div class="image-container">
-		<button onclick="importTaunt()">Import Custom Taunt Audio</button>
+		<button id="button5" onclick="toggleAudioMode()">Pizza Tower Mode</button>
         <img id="image" src="idle.webp" alt="Image">
     </div>
-    <audio id="custom-audio" src="sfx_taunt.mp3"></audio>
+	<button onclick="importTaunt()">Import Custom Taunt Sound</button>
+	<div class="taunt-image-container">
+        <img id="imaget" src="tauntbg2.webp" alt="Image">
+    </div>
+	<div class="noise-image-container">
+        <img src="noise.webp" alt="Image">
+    </div>
+	<div class="pepper-image-container">
+        <img src="pepper.webp" alt="Image">
+    </div>
+	<div class="pf-image-container">
+        <img src="pf.webp" alt="Image">
+    </div>
+    <audio id="custom-audio" src="PTtaunt.mp3"></audio>
 </body>
 </html>
